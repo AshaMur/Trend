@@ -29,18 +29,21 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl apply -f service.yaml'
+                // Inject kubeconfig file from Jenkins credentials
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl apply -f service.yaml'
+                }
             }
         }
     }
 
     post {
         success {
-            echo "Build and deployment completed successfully!"
+            echo "Build, push, and deployment completed successfully!"
         }
         failure {
-            echo "Build or deployment failed. Check logs."
+            echo "Pipeline failed. Check logs for details."
         }
     }
 }
